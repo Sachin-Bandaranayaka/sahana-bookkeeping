@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Member {
+  id            String         @id @default(uuid())
+  name          String
+  contactNumber String?
+  email         String?
+  joinDate      DateTime       @default(now())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  attendance    Attendance[]
+  cashBook      CashBook[]
+  dividends     Dividend[]
+  loans         Loan[]
+  notifications Notification[]
+}
+
+model CashBook {
+  id          String   @id @default(uuid())
+  memberId    String
+  date        DateTime @default(now())
+  description String
+  amount      Float
+  total       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  member      Member   @relation(fields: [memberId], references: [id])
+}
+
+model Loan {
+  id                   String                @id @default(uuid())
+  memberId             String
+  type                 String
+  principal            Float
+  startDate            DateTime
+  interestRate         Float
+  balance              Float
+  status               String                @default("ACTIVE")
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  interestCalculations InterestCalculation[]
+  member               Member                @relation(fields: [memberId], references: [id])
+  payments             LoanPayment[]
+  notifications        Notification[]
+}
+
+model LoanPayment {
+  id        String   @id @default(uuid())
+  loanId    String
+  date      DateTime @default(now())
+  premium   Float
+  interest  Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  loan      Loan     @relation(fields: [loanId], references: [id])
+}
+
+model InterestCalculation {
+  id              String   @id @default(uuid())
+  loanId          String
+  calculationDate DateTime @default(now())
+  daysElapsed     Int
+  interestAmount  Float
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  loan            Loan     @relation(fields: [loanId], references: [id])
+}
+
+model Dividend {
+  id             String   @id @default(uuid())
+  memberId       String
+  date           DateTime @default(now())
+  shareAmount    Float
+  annualInterest Float
+  attendingBonus Float
+  deductibles    Float
+  total          Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  member         Member   @relation(fields: [memberId], references: [id])
+}
+
+model Bank {
+  id            String         @id @default(uuid())
+  name          String
+  accountNumber String
+  balance       Float
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  fixedDeposits FixedDeposit[]
+}
+
+model FixedDeposit {
+  id           String   @id @default(uuid())
+  bankId       String
+  startDate    DateTime
+  endDate      DateTime
+  interestRate Float
+  amount       Float
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  bank         Bank     @relation(fields: [bankId], references: [id])
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  memberId  String
+  date      DateTime @default(now())
+  bonus     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  member    Member   @relation(fields: [memberId], references: [id])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  memberId  String
+  loanId    String?
+  type      String
+  message   String
+  status    String
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  loan      Loan?     @relation(fields: [loanId], references: [id])
+  member    Member    @relation(fields: [memberId], references: [id])
+}

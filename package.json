@@ -1,27 +1,56 @@
 {
-  "name": "sahana",
+  "name": "sahana-bookkeeping",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
+    "dev": "concurrently \"npm run next:dev\" \"npm run electron:dev\"",
+    "next:dev": "next dev",
+    "electron:dev": "tsc electron/main.ts && electron .",
+    "build": "next build && tsc electron/main.ts",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "postinstall": "prisma generate"
+  },
+  "build": {
+    "appId": "com.sahana.bookkeeping",
+    "mac": {
+      "category": "public.app-category.finance"
+    },
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "package.json",
+      "electron/**/*",
+      ".next/**/*",
+      "node_modules/**/*"
+    ]
   },
   "dependencies": {
+    "@prisma/client": "^6.3.1",
+    "@types/node-cron": "^3.0.11",
+    "concurrently": "^9.1.2",
+    "electron": "^34.1.1",
+    "electron-builder": "^25.1.8",
+    "next": "15.1.6",
+    "node-cron": "^3.0.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.1.6"
+    "sqlite3": "^5.1.7",
+    "wait-on": "^8.0.2"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
     "eslint": "^9",
     "eslint-config-next": "15.1.6",
-    "@eslint/eslintrc": "^3"
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
   }
 }
