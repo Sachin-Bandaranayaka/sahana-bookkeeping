@@ -3,6 +3,27 @@ import { formatCurrency, formatDate, formatDateInput } from '@/lib/utils';
 import PaymentForm from '@/components/PaymentForm';
 import { notFound } from 'next/navigation';
 
+interface Payment {
+    date: Date;
+    interest: number;
+}
+
+interface Member {
+    name: string;
+}
+
+interface Loan {
+    id: string;
+    member: Member;
+    type: string;
+    principal: number;
+    interestRate: number;
+    balance: number;
+    status: 'ACTIVE' | 'PAID' | 'DEFAULTED';
+    startDate: Date;
+    payments: Payment[];
+}
+
 async function getLoanDetails(id: string) {
     const loan = await prisma.loan.findUnique({
         where: { id },
@@ -23,17 +44,22 @@ async function getLoanDetails(id: string) {
     return loan;
 }
 
-function calculateInterest(loan: any) {
+function calculateInterest(loan: Loan): number {
     const today = new Date();
     const startDate = new Date(loan.startDate);
     const days = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     const dailyInterest = (loan.principal * loan.interestRate * days) / 365;
-    const totalPaidInterest = loan.payments.reduce((sum: number, payment: any) => sum + payment.interest, 0);
+    const totalPaidInterest = loan.payments.reduce((sum: number, payment: Payment) => sum + payment.interest, 0);
     return dailyInterest - totalPaidInterest;
 }
 
 export default async function LoanDetailsPage({ params }: { params: { id: string } }) {
-    const loan = await getLoanDetails(params.id);
+    const id = params?.id;
+    if (!id) {
+        notFound();
+    }
+    
+    const loan = await getLoanDetails(id);
     const pendingInterest = calculateInterest(loan);
 
     // Calculate today's date on the server
@@ -100,7 +126,7 @@ export default async function LoanDetailsPage({ params }: { params: { id: string
                                 </dl>
                             </div>
 
-                            {/* Payment Form Card */}
+                            {/* Payment Form */}
                             <div className="bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
                                 <h2 className="text-lg font-medium leading-6 text-gray-900 mb-4">Record Payment</h2>
                                 <PaymentForm
@@ -110,61 +136,29 @@ export default async function LoanDetailsPage({ params }: { params: { id: string
                                 />
                             </div>
 
-                            {/* Payment History Card */}
+                            {/* Payment History */}
                             <div className="lg:col-span-2 bg-white px-4 py-5 shadow sm:rounded-lg sm:p-6">
                                 <h2 className="text-lg font-medium leading-6 text-gray-900 mb-4">Payment History</h2>
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full divide-y divide-gray-300">
                                         <thead>
                                             <tr>
-                                                <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">
-                                                    Date
-                                                </th>
-                                                <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
-                                                    Premium
-                                                </th>
-                                                <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
-                                                    Interest
-                                                </th>
-                                                <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
-                                                    Total
-                                                </th>
+                                                <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">Date</th>
+                                                <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">Premium</th>
+                                                <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">Interest</th>
+                                                <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">Total</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
                                             {loan.payments.map((payment) => (
-                                                <tr key={payment.id}>
-                                                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900">
-                                                        {formatDate(payment.date)}
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-900">
-                                                        {formatCurrency(payment.premium)}
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-900">
-                                                        {formatCurrency(payment.interest)}
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-900">
-                                                        {formatCurrency(payment.premium + payment.interest)}
-                                                    </td>
+                                                <tr key={payment.date.toString()}>
+                                                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900">{formatDate(payment.date)}</td>
+                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-900">{formatCurrency(payment.premium)}</td>
+                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-900">{formatCurrency(payment.interest)}</td>
+                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-900">{formatCurrency(payment.premium + payment.interest)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <th scope="row" className="py-4 pl-4 pr-3 text-sm font-semibold text-gray-900 text-left">
-                                                    Total
-                                                </th>
-                                                <td className="px-3 py-4 text-sm text-right font-semibold text-gray-900">
-                                                    {formatCurrency(loan.payments.reduce((sum, p) => sum + p.premium, 0))}
-                                                </td>
-                                                <td className="px-3 py-4 text-sm text-right font-semibold text-gray-900">
-                                                    {formatCurrency(loan.payments.reduce((sum, p) => sum + p.interest, 0))}
-                                                </td>
-                                                <td className="px-3 py-4 text-sm text-right font-semibold text-gray-900">
-                                                    {formatCurrency(loan.payments.reduce((sum, p) => sum + p.premium + p.interest, 0))}
-                                                </td>
-                                            </tr>
-                                        </tfoot>
                                     </table>
                                 </div>
                             </div>
@@ -174,4 +168,4 @@ export default async function LoanDetailsPage({ params }: { params: { id: string
             </div>
         </div>
     );
-} 
+}

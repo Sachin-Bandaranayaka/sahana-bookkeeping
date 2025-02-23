@@ -1,8 +1,34 @@
 import { prisma } from '@/lib/db';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
-async function getDividendsWithMembers() {
+interface DividendTotals {
+    shareAmount: number;
+    annualInterest: number;
+    attendingBonus: number;
+    deductibles: number;
+    total: number;
+}
+
+interface Dividend {
+    id: string;
+    member: {
+        name: string;
+    };
+    shareAmount: number;
+    annualInterest: number;
+    attendingBonus: number;
+    deductibles: number;
+    total: number;
+}
+
+interface GroupedDividend {
+    period: string;
+    dividends: Dividend[];
+    totals: DividendTotals;
+}
+
+async function getDividendsWithMembers(): Promise<GroupedDividend[]> {
     const dividends = await prisma.dividend.findMany({
         include: {
             member: true,
@@ -20,7 +46,7 @@ async function getDividendsWithMembers() {
     });
 
     // Group dividends by quarter
-    const groupedDividends = dividends.reduce((groups: any, dividend) => {
+    const groupedDividends = dividends.reduce((groups: Record<string, GroupedDividend>, dividend) => {
         const date = new Date(dividend.date);
         const quarter = Math.floor(date.getMonth() / 3);
         const year = date.getFullYear();
@@ -75,7 +101,7 @@ export default async function DividendsPage() {
                 <main>
                     <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                         <div className="mt-8 space-y-8">
-                            {groupedDividends.map((group: any) => (
+                            {groupedDividends.map((group) => (
                                 <div key={group.period} className="bg-white shadow sm:rounded-lg">
                                     <div className="px-4 py-5 sm:p-6">
                                         <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -106,7 +132,7 @@ export default async function DividendsPage() {
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-200">
-                                                    {group.dividends.map((dividend: any) => (
+                                                    {group.dividends.map((dividend) => (
                                                         <tr key={dividend.id}>
                                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
                                                                 {dividend.member.name}
@@ -131,21 +157,9 @@ export default async function DividendsPage() {
                                                 </tbody>
                                                 <tfoot>
                                                     <tr>
-                                                        <th scope="row" className="py-4 pl-4 pr-3 text-sm font-semibold text-gray-900 text-left">
-                                                            Total
+                                                        <th scope="row" colSpan={5} className="py-4 pl-4 pr-3 text-sm font-semibold text-gray-900 text-right">
+                                                            Total Distribution:
                                                         </th>
-                                                        <td className="px-3 py-4 text-sm text-right font-semibold text-gray-900">
-                                                            {formatCurrency(group.totals.shareAmount)}
-                                                        </td>
-                                                        <td className="px-3 py-4 text-sm text-right font-semibold text-gray-900">
-                                                            {formatCurrency(group.totals.annualInterest)}
-                                                        </td>
-                                                        <td className="px-3 py-4 text-sm text-right font-semibold text-gray-900">
-                                                            {formatCurrency(group.totals.attendingBonus)}
-                                                        </td>
-                                                        <td className="px-3 py-4 text-sm text-right font-semibold text-gray-900">
-                                                            {formatCurrency(group.totals.deductibles)}
-                                                        </td>
                                                         <td className="px-3 py-4 text-sm text-right font-semibold text-gray-900">
                                                             {formatCurrency(group.totals.total)}
                                                         </td>
@@ -162,4 +176,4 @@ export default async function DividendsPage() {
             </div>
         </div>
     );
-} 
+}

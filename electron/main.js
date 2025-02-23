@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var electron_1 = require("electron");
 var path = require("path");
-var isDev = require("electron-is-dev");
+// Set development environment
+process.env.NODE_ENV = 'development';
+var isDev = true;
 var cron_1 = require("./cron");
 var mainWindow = null;
 var cronService = null;
@@ -17,7 +19,7 @@ function createWindow() {
         },
     });
     var startUrl = isDev
-        ? "http://localhost:".concat(DEV_PORT)
+        ? "http://localhost:3000"
         : "file://".concat(path.join(__dirname, '../build/index.html'));
     mainWindow.loadURL(startUrl);
     if (isDev) {

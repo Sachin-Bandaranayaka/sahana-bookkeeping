@@ -9,9 +9,11 @@ export async function GET() {
             },
         });
         return NextResponse.json(members);
-    } catch (error) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch members';
+        console.error('Failed to fetch members:', errorMessage);
         return NextResponse.json(
-            { error: 'Failed to fetch members' },
+            { error: errorMessage },
             { status: 500 }
         );
     }
@@ -38,10 +40,12 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json(member, { status: 201 });
-    } catch (error) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create member';
+        console.error('Failed to create member:', errorMessage);
         return NextResponse.json(
-            { error: 'Failed to create member' },
+            { error: errorMessage },
             { status: 500 }
         );
     }
-} 
+}

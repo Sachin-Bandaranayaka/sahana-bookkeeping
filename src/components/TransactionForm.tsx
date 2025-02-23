@@ -125,7 +125,7 @@ export default function TransactionForm({ members }: TransactionFormProps) {
                     <div className="mt-2">
                         <div className="relative">
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <span className="text-gray-500 sm:text-sm">₹</span>
+                                <span className="text-gray-500 sm:text-sm">Rs.</span>
                             </div>
                             <input
                                 type="number"
@@ -178,4 +178,4 @@ export default function TransactionForm({ members }: TransactionFormProps) {
             </div>
         </form>
     );
-} 
+}

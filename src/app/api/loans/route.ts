@@ -49,9 +49,11 @@ export async function GET(request: NextRequest) {
 
         const loans = await prisma.loan.findMany(query);
         return NextResponse.json(loans);
-    } catch (error) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch loans';
+        console.error('Failed to fetch loans:', errorMessage);
         return NextResponse.json(
-            { error: 'Failed to fetch loans' },
+            { error: errorMessage },
             { status: 500 }
         );
     }
@@ -82,10 +84,12 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json(loan, { status: 201 });
-    } catch (error) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create loan';
+        console.error('Failed to create loan:', errorMessage);
         return NextResponse.json(
-            { error: 'Failed to create loan' },
+            { error: errorMessage },
             { status: 500 }
         );
     }
-} 
+}

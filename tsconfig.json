@@ -22,6 +22,7 @@
         "name": "next"
       }
     ],
+    "types": ["node", "electron", "electron-is-dev"],
     "paths": {
       "@/*": [
         "./src/*"

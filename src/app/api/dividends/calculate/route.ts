@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+interface DividendData {
+    memberId: string;
+    shareAmount: number;
+    annualInterest: number;
+    attendingBonus: number;
+    deductibles: number;
+    total: number;
+}
+
 export async function POST(request: NextRequest) {
     try {
         const data = await request.json();
@@ -16,7 +25,7 @@ export async function POST(request: NextRequest) {
         // Create all dividends in a transaction
         const result = await prisma.$transaction(async (tx) => {
             const createdDividends = await Promise.all(
-                dividends.map((dividend: any) =>
+                dividends.map((dividend: DividendData) =>
                     tx.dividend.create({
                         data: {
                             memberId: dividend.memberId,
@@ -32,7 +41,7 @@ export async function POST(request: NextRequest) {
             );
 
             // If there are deductibles, create loan payments for the unpaid interest
-            for (const dividend of dividends) {
+            for (const dividend of dividends as DividendData[]) {
                 if (dividend.deductibles > 0) {
                     // Get active loans for the member
                     const activeLoans = await tx.loan.findMany({
@@ -86,4 +95,4 @@ export async function POST(request: NextRequest) {
             { status: 500 }
         );
     }
-} 
+}

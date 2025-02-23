@@ -1,6 +1,26 @@
 import { prisma } from '@/lib/db';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
+
+interface Payment {
+    interest: number;
+}
+
+interface Member {
+    name: string;
+}
+
+interface Loan {
+    id: string;
+    member: Member;
+    type: string;
+    principal: number;
+    interestRate: number;
+    balance: number;
+    status: 'ACTIVE' | 'PAID' | 'DEFAULTED';
+    startDate: Date;
+    payments: Payment[];
+}
 
 async function getLoansWithMembers() {
     const loans = await prisma.loan.findMany({
@@ -24,12 +44,12 @@ async function getLoansWithMembers() {
     return loans;
 }
 
-function calculateInterest(loan: any) {
+function calculateInterest(loan: Loan): number {
     const today = new Date();
     const startDate = new Date(loan.startDate);
     const days = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     const dailyInterest = (loan.principal * loan.interestRate * days) / 365;
-    const totalPaidInterest = loan.payments.reduce((sum: number, payment: any) => sum + payment.interest, 0);
+    const totalPaidInterest = loan.payments.reduce((sum: number, payment: Payment) => sum + payment.interest, 0);
     return dailyInterest - totalPaidInterest;
 }
 
@@ -86,7 +106,7 @@ export default async function LoansPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 bg-white">
-                                        {loans.map((loan) => {
+                                        {loans.map((loan: Loan) => {
                                             const pendingInterest = calculateInterest(loan);
                                             return (
                                                 <tr key={loan.id}>
@@ -110,18 +130,22 @@ export default async function LoansPage() {
                                                     </td>
                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
                                                         <span
-                                                            className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${loan.status === 'ACTIVE'
+                                                            className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                                                loan.status === 'ACTIVE'
                                                                     ? 'bg-green-100 text-green-800'
                                                                     : loan.status === 'PAID'
-                                                                        ? 'bg-gray-100 text-gray-800'
-                                                                        : 'bg-red-100 text-red-800'
-                                                                }`}
+                                                                    ? 'bg-gray-100 text-gray-800'
+                                                                    : 'bg-red-100 text-red-800'
+                                                            }`}
                                                         >
                                                             {loan.status}
                                                         </span>
                                                     </td>
                                                     <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                                        <Link href={`/loans/${loan.id}`} className="text-indigo-600 hover:text-indigo-900">
+                                                        <Link
+                                                            href={`/loans/${loan.id}`}
+                                                            className="text-indigo-600 hover:text-indigo-900"
+                                                        >
                                                             View<span className="sr-only">, {loan.member.name}</span>
                                                         </Link>
                                                     </td>
@@ -137,4 +161,4 @@ export default async function LoansPage() {
             </div>
         </div>
     );
-} 
+}

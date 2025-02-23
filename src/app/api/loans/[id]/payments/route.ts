@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+interface PageProps {
+    params: {
+        id: string;
+    };
+}
+
 export async function POST(
-    request: NextRequest,
-    { params }: { params: { id: string } }
-) {
+    req: NextRequest,
+    props: PageProps
+): Promise<Response> {
     try {
-        const data = await request.json();
+        const data = await req.json();
         const { date, premium, interest } = data;
-        const loanId = params.id;
+        const loanId = props.params.id;
 
         if (!date || (premium === undefined && interest === undefined)) {
             return NextResponse.json(
@@ -52,22 +58,24 @@ export async function POST(
         }
 
         return NextResponse.json(payment, { status: 201 });
-    } catch (error) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create payment';
+        console.error('Failed to create payment:', errorMessage);
         return NextResponse.json(
-            { error: 'Failed to create payment' },
+            { error: errorMessage },
             { status: 500 }
         );
     }
 }
 
 export async function GET(
-    request: NextRequest,
-    { params }: { params: { id: string } }
-) {
+    req: NextRequest,
+    props: PageProps
+): Promise<Response> {
     try {
         const payments = await prisma.loanPayment.findMany({
             where: {
-                loanId: params.id,
+                loanId: props.params.id,
             },
             orderBy: {
                 date: 'desc',
@@ -75,10 +83,12 @@ export async function GET(
         });
 
         return NextResponse.json(payments);
-    } catch (error) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch payments';
+        console.error('Failed to fetch payments:', errorMessage);
         return NextResponse.json(
-            { error: 'Failed to fetch payments' },
+            { error: errorMessage },
             { status: 500 }
         );
     }
-} 
+}
