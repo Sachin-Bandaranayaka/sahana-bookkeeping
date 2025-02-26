@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import { formatCurrency, formatDate, formatDateInput } from '@/lib/utils';
 import PaymentForm from '@/components/PaymentForm';
 import { notFound } from 'next/navigation';
@@ -58,7 +58,7 @@ export default async function LoanDetailsPage({ params }: { params: { id: string
     if (!id) {
         notFound();
     }
-    
+
     const loan = await getLoanDetails(id);
     const pendingInterest = calculateInterest(loan);
 

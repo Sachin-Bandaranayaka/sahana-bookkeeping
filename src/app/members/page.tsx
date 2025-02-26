@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 
 async function getMembers() {
     const members = await prisma.member.findMany({

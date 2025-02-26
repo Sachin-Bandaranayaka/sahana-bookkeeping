@@ -9,6 +9,8 @@ const navigation = [
     { name: 'Members', href: '/members' },
     { name: 'Cash Book', href: '/cash-book' },
     { name: 'Loans', href: '/loans' },
+    { name: 'Expenses', href: '/expenses' },
+    { name: 'Profit & Loss', href: '/profit' },
     { name: 'Dividends', href: '/dividends' },
     { name: 'Banks', href: '/banks' },
     { name: 'Notifications', href: '/notifications' },

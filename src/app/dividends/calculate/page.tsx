@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import { formatCurrency } from '@/lib/utils';
 import DividendCalculationForm from '@/components/DividendCalculationForm';
 

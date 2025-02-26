@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import { formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -130,13 +130,12 @@ export default async function LoansPage() {
                                                     </td>
                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
                                                         <span
-                                                            className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                                                loan.status === 'ACTIVE'
+                                                            className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${loan.status === 'ACTIVE'
                                                                     ? 'bg-green-100 text-green-800'
                                                                     : loan.status === 'PAID'
-                                                                    ? 'bg-gray-100 text-gray-800'
-                                                                    : 'bg-red-100 text-red-800'
-                                                            }`}
+                                                                        ? 'bg-gray-100 text-gray-800'
+                                                                        : 'bg-red-100 text-red-800'
+                                                                }`}
                                                         >
                                                             {loan.status}
                                                         </span>

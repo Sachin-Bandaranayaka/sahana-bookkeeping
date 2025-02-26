@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/utils';
 
 async function getNotifications() {
@@ -74,10 +74,10 @@ export default async function NotificationsPage() {
                                                 <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
                                                     <span
                                                         className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${notification.status === 'SENT'
-                                                                ? 'bg-green-100 text-green-800'
-                                                                : notification.status === 'PENDING'
-                                                                    ? 'bg-yellow-100 text-yellow-800'
-                                                                    : 'bg-red-100 text-red-800'
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : notification.status === 'PENDING'
+                                                                ? 'bg-yellow-100 text-yellow-800'
+                                                                : 'bg-red-100 text-red-800'
                                                             }`}
                                                     >
                                                         {notification.status}
