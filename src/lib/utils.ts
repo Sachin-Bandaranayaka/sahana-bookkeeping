@@ -3,12 +3,15 @@ export function classNames(...classes: (string | boolean | undefined)[]) {
 }
 
 export function formatCurrency(amount: number) {
-    return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
+    // Format with the standard currency formatter
+    const formatted = new Intl.NumberFormat('en-IN', {
+        style: 'decimal',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(amount);
+
+    // Add "Rs" prefix with a space for better readability
+    return `Rs ${formatted}`;
 }
 
 export function calculateDailyInterest(principal: number, annualRate: number, days: number) {

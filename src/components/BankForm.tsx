@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiPost } from '@/lib/api';
 
 export default function BankForm() {
     const router = useRouter();
     const [formData, setFormData] = useState({
         name: '',
         accountNumber: '',
-        balance: '',
+        balance: 0,
     });
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,7 +18,7 @@ export default function BankForm() {
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
-            [name]: value,
+            [name]: name === 'balance' ? parseFloat(value) || 0 : value,
         }));
     };
 
@@ -27,22 +28,7 @@ export default function BankForm() {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('/api/banks', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    balance: parseFloat(formData.balance),
-                }),
-            });
-
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || 'Failed to create bank');
-            }
-
+            await apiPost('banks', formData);
             router.push('/banks');
             router.refresh();
         } catch (err) {
@@ -105,22 +91,17 @@ export default function BankForm() {
                         Current Balance
                     </label>
                     <div className="mt-2">
-                        <div className="relative">
-                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <span className="text-gray-500 sm:text-sm">₹</span>
-                            </div>
-                            <input
-                                type="number"
-                                name="balance"
-                                id="balance"
-                                required
-                                min="0"
-                                step="0.01"
-                                value={formData.balance}
-                                onChange={handleChange}
-                                className="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                            />
-                        </div>
+                        <input
+                            type="number"
+                            name="balance"
+                            id="balance"
+                            required
+                            min="0"
+                            step="0.01"
+                            value={formData.balance}
+                            onChange={handleChange}
+                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        />
                     </div>
                 </div>
             </div>

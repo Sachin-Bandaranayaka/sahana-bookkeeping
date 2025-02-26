@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiPost } from '@/lib/api';
 
 export default function MemberForm() {
     const router = useRouter();
@@ -27,19 +28,8 @@ export default function MemberForm() {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('/api/members', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || 'Failed to create member');
-            }
-
+            // Use the API utility function for consistent URL handling
+            await apiPost('members', formData);
             router.push('/members');
             router.refresh();
         } catch (err) {

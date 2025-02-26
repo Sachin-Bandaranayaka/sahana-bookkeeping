@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiPost } from '@/lib/api';
+import { getTodayDateInput } from '@/lib/utils';
 
 interface Member {
     id: string;
@@ -16,9 +18,9 @@ export default function TransactionForm({ members }: TransactionFormProps) {
     const router = useRouter();
     const [formData, setFormData] = useState({
         memberId: '',
-        date: new Date().toISOString().split('T')[0],
+        date: getTodayDateInput(),
         description: '',
-        amount: '',
+        amount: 0,
     });
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,7 +31,7 @@ export default function TransactionForm({ members }: TransactionFormProps) {
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
-            [name]: value,
+            [name]: name === 'amount' ? parseFloat(value) || 0 : value,
         }));
     };
 
@@ -39,22 +41,7 @@ export default function TransactionForm({ members }: TransactionFormProps) {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('/api/cash-book', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    amount: parseFloat(formData.amount),
-                }),
-            });
-
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || 'Failed to create transaction');
-            }
-
+            await apiPost('cash-book', formData);
             router.push('/cash-book');
             router.refresh();
         } catch (err) {
@@ -123,21 +110,16 @@ export default function TransactionForm({ members }: TransactionFormProps) {
                         Amount
                     </label>
                     <div className="mt-2">
-                        <div className="relative">
-                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <span className="text-gray-500 sm:text-sm">Rs.</span>
-                            </div>
-                            <input
-                                type="number"
-                                name="amount"
-                                id="amount"
-                                required
-                                step="0.01"
-                                value={formData.amount}
-                                onChange={handleChange}
-                                className="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                            />
-                        </div>
+                        <input
+                            type="number"
+                            name="amount"
+                            id="amount"
+                            required
+                            step="0.01"
+                            value={formData.amount}
+                            onChange={handleChange}
+                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        />
                     </div>
                 </div>
 
@@ -150,8 +132,8 @@ export default function TransactionForm({ members }: TransactionFormProps) {
                         <textarea
                             id="description"
                             name="description"
-                            required
                             rows={3}
+                            required
                             value={formData.description}
                             onChange={handleChange}
                             className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
